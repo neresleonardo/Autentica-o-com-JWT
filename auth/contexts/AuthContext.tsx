@@ -1,5 +1,13 @@
-import { createContext, ReactNode } from "react";
+import { createContext, ReactNode, useEffect, useState } from "react";
+import Router from 'next/router'
+import { setCookie, parseCookies } from 'nookies'
 import { api } from "../services/api";
+
+type User = {
+    email: string;
+    permissions: string;
+    roles: string;
+}
 
 type SignInCrendemtials = {
     email: string,
@@ -8,6 +16,7 @@ type SignInCrendemtials = {
 
 type AuthContextData = {
     signIn(credentials: SignInCrendemtials): Promise<void>;
+    user: User;
     isAuthenticated: boolean;
 }
 
@@ -19,7 +28,28 @@ export const AuthContext = createContext({} as AuthContextData)
 
 export function AuthProvider({ children }: AuthProviderProps) {
 
-    const isAuthenticated = false;
+
+    // Armazenando os dados do usuário
+    const [user, setUser] = useState<User>();
+
+    const isAuthenticated = !!user;
+
+    //Carregar user novamente 
+
+    useEffect(() => {
+        const { 'nextauth.token': token } = parseCookies()
+
+        if (token) {
+            api.get('/me').then(response => {
+
+            const { email, permissions, roles } = response.data
+
+            setUser({ email, permissions, roles })
+                
+            })
+        }
+    }, [])
+
 
     async function signIn({ email, password }: SignInCrendemtials) {
         //chamada de autenticação 
@@ -30,7 +60,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 password
             })
 
-            console.log(response.data)
+            const { token, refreshToken, permissions, roles } = response.data;
+
+            setCookie(undefined, 'nextauth.token', token, {
+                maxAge: 60 * 60 *24 * 30, // 30 dias
+                path: '/', // Global
+            })
+            setCookie(undefined, 'nextauth.refreshToken', refreshToken, {
+                maxAge: 60 * 60 *24 * 30, // 30 dias
+                path: '/', // Global
+            })
+            // sessionStorage
+            // LocalStorage
+            // cookies
+
+            setUser({
+                email,
+                permissions,
+                roles
+            })
+
+            api.defaults.headers['Authorization'] = `Bearer ${token}`
+
+            Router.push('/dashboard')
+
         } catch (err) {
             console.log(err);
             
@@ -39,7 +92,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     return (
 
-        <AuthContext.Provider value={{ signIn, isAuthenticated }}>
+        <AuthContext.Provider value={{ signIn, isAuthenticated, user }}>
             {children}
         </AuthContext.Provider>
     )
