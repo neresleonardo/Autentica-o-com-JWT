@@ -1,8 +1,33 @@
 import type { NextPage } from 'next'
+import { FormEvent, useContext, useState } from 'react'
+import { AuthContext } from '../../contexts/AuthContext';
+
 
 const Home: NextPage = () => {
+
+  const [ email, setEmail] = useState("");
+  const [ password, setPassword] = useState("");
+
+  const {signIn} = useContext(AuthContext)
+
+  async function handleSubmit(event: FormEvent) {
+
+    event.preventDefault();
+
+    const data = {
+      email, password
+    }
+
+    await signIn(data)
+    
+  }
+
   return (
-   <h1>Ola</h1>
+    <form onSubmit={handleSubmit}>
+      <input type="text" value={email} onChange={e => setEmail(e.target.value)} />
+      <input type="password" value={password} onChange={e => setPassword(e.target.value)} />
+      <button type="submit"> SignIn</button>
+    </form>
   )
 }
 
