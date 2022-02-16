@@ -1,5 +1,6 @@
-import type { GetServerSideProps, NextPage } from 'next'
+import type {  NextPage } from 'next'
 import { FormEvent, useContext, useState } from 'react'
+
 
 import { AuthContext } from '../../contexts/AuthContext';
 import { withSSRGuest } from '../utils/withSSRGuest';
@@ -26,11 +27,12 @@ const Home: NextPage = () => {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input type="text" value={email} onChange={e => setEmail(e.target.value)} />
-      <input type="password" value={password} onChange={e => setPassword(e.target.value)} />
-      <button type="submit"> SignIn</button>
-    </form>
+    
+      <form onSubmit={handleSubmit}>
+        <input type="text" value={email} onChange={e => setEmail(e.target.value)} />
+        <input type="password" value={password} onChange={e => setPassword(e.target.value)} />
+        <button type="submit"> SignIn</button>
+      </form>
   )
 }
 
