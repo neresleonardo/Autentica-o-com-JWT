@@ -11,8 +11,9 @@ type ValidadeUserPermissionsParams = {
 
 export function validateUsePermissions({ 
     user,
-     permissions,
-      roles} : ValidadeUserPermissionsParams) {
+    permissions,
+    roles
+    }: ValidadeUserPermissionsParams) {
 
     if (permissions?.length > 0) {
         const hasAllPermissions = permissions.some(permission => {

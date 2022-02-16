@@ -3,6 +3,7 @@ import { parseCookies } from 'nookies'
 import decode from 'jwt-decode'
 import {  destroyCookie } from 'nookies'
 import { AuthTokenError } from "../../services/errors/AuthTokenError";
+import { validateUsePermissions } from "./validateUsePermissions";
 
 type withSSRAuthOptions = {
     permissions: string[],
@@ -24,9 +25,27 @@ export function withSSRAuth<P>(fn: GetServerSideProps<P>, options?:withSSRAuthOp
             }
         }
 
-        const user  = decode(token)
+      if (options) {
+        const user  = decode<{ permissions: string[], roles: string[],}>(token);
+        const {permissions, roles} = options
 
-        console.log(user);
+        const userHasValidPermissions = validateUsePermissions({
+            user,
+            permissions,
+            roles
+        })
+
+        if (!userHasValidPermissions) {
+            return {
+                redirect: {
+                    destination: '/dashboard',
+                    permanent: false
+                }
+            }
+        }
+
+      }
+
         
         
         try {
